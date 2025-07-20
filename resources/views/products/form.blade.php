@@ -70,23 +70,29 @@
         @endif
     </div>
 
-    {{-- Attributes --}}
+    {{-- Attributes and Attribute Values --}}
     @if(isset($attributes) && $attributes->count())
     <div>
         <label class="block font-medium mb-2">Product Attributes</label>
-        <div class="space-y-2">
-            @foreach($attributes as $attribute)
-                <label class="inline-flex items-center space-x-2">
-                    <input
-                        type="checkbox"
-                        name="attribute_ids[]"
-                        value="{{ $attribute->id }}"
-                        {{ in_array($attribute->id, old('attribute_ids', $selectedAttributes ?? [])) ? 'checked' : '' }}
-                    >
-                    <span>{{ $attribute->name }}</span>
-                </label>
-            @endforeach
-        </div>
+
+        @foreach($attributes as $attribute)
+            <div class="mb-4">
+                <p class="font-semibold">{{ $attribute->name }}</p>
+                <div class="flex flex-wrap gap-4 mt-1">
+                    @foreach($attribute->values as $value)
+                        <label class="inline-flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                name="attribute_value_ids[]"
+                                value="{{ $value->id }}"
+                                {{ in_array($value->id, old('attribute_value_ids', $selectedAttributeValueIds ?? [])) ? 'checked' : '' }}
+                            >
+                            <span>{{ $value->value }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        @endforeach
     </div>
     @endif
 

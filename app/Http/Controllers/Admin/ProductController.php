@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -22,45 +23,49 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $attributes = ProductAttribute::with('values')->get();
-        $selectedValues = []; // No selected attribute values yet
-        return view('products.create', compact('categories', 'attributes', 'selectedValues'));
+
+        // Important: set empty selected attributes for new product create form
+        $selectedAttributeValueIds = [];
+
+        return view('products.create', compact('categories', 'attributes', 'selectedAttributeValueIds'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'sku' => 'nullable|string|max:100|unique:products,sku',
-            'stock_qty' => 'required|integer',
-            'category_id' => 'required|exists:categories,id',
-            'status' => 'required|in:1,0',
-            'image' => 'nullable|image|max:2048',
+            'name'          => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'price'         => 'required|numeric',
+            'sku'           => 'nullable|string|max:100|unique:products,sku',
+            'stock_qty'     => 'required|integer',
+            'category_id'   => 'required|exists:categories,id',
+            'status'        => 'required|in:1,0',
+            'image'         => 'nullable|image|max:2048',
+            'attribute_value_ids' => 'nullable|array',
+            'attribute_value_ids.*' => 'exists:product_attribute_values,id',
         ]);
 
         $product = Product::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'price' => $request->price,
-            'sku' => $request->sku,
-            'stock_qty' => $request->stock_qty,
-            'category_id' => $request->category_id,
-            'status' => (int) $request->status,
+            'name'          => $request->name,
+            'slug'          => Str::slug($request->name),
+            'description'   => $request->description,
+            'price'         => $request->price,
+            'sku'           => $request->sku,
+            'stock_qty'     => $request->stock_qty,
+            'category_id'   => $request->category_id,
+            'status'        => (int) $request->status,
         ]);
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
             ProductImage::create([
-                'product_id' => $product->id,
-                'image_path' => $path,
-                'is_primary' => true,
+                'product_id'    => $product->id,
+                'image_path'    => $path,
+                'is_primary'    => true,
             ]);
         }
 
-        // Attach attribute values, not attributes
-        if ($request->has('attribute_value_ids')) {
+        if ($request->filled('attribute_value_ids')) {
             $product->attributeValues()->attach($request->attribute_value_ids);
         }
 
@@ -70,36 +75,37 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::all();
-        $attributes = ProductAttribute::all();
+        $attributes = ProductAttribute::with('values')->get();
 
-        $product->load('attributes'); // Load attributes first
+        $selectedAttributeValueIds = $product->attributeValues->pluck('id')->toArray();
 
-        $selectedAttributes = $product->attributes->pluck('id')->toArray(); // Then pluck IDs
-
-        return view('products.edit', compact('product', 'categories', 'attributes', 'selectedAttributes'));
+        return view('products.edit', compact('product', 'categories', 'attributes', 'selectedAttributeValueIds'));
     }
+
     public function update(Request $request, Product $product)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'sku' => 'nullable|string|max:100|unique:products,sku,' . $product->id,
-            'stock_qty' => 'required|integer',
-            'category_id' => 'required|exists:categories,id',
-            'status' => 'required|in:1,0',
-            'image' => 'nullable|image|max:2048',
+            'name'          => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'price'         => 'required|numeric',
+            'sku'           => 'nullable|string|max:100|unique:products,sku,' . $product->id,
+            'stock_qty'     => 'required|integer',
+            'category_id'   => 'required|exists:categories,id',
+            'status'        => 'required|in:1,0',
+            'image'         => 'nullable|image|max:2048',
+            'attribute_value_ids' => 'nullable|array',
+            'attribute_value_ids.*' => 'exists:product_attribute_values,id',
         ]);
 
         $product->update([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'price' => $request->price,
-            'sku' => $request->sku,
-            'stock_qty' => $request->stock_qty,
-            'category_id' => $request->category_id,
-            'status' => (int) $request->status,
+            'name'          => $request->name,
+            'slug'          => Str::slug($request->name),
+            'description'   => $request->description,
+            'price'         => $request->price,
+            'sku'           => $request->sku,
+            'stock_qty'     => $request->stock_qty,
+            'category_id'   => $request->category_id,
+            'status'        => (int) $request->status,
         ]);
 
         if ($request->hasFile('image')) {
@@ -117,8 +123,7 @@ class ProductController extends Controller
             ]);
         }
 
-        // Sync attribute values
-        if ($request->has('attribute_value_ids')) {
+        if ($request->filled('attribute_value_ids')) {
             $product->attributeValues()->sync($request->attribute_value_ids);
         } else {
             $product->attributeValues()->detach();
@@ -135,6 +140,7 @@ class ProductController extends Controller
         }
 
         $product->attributeValues()->detach();
+
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');

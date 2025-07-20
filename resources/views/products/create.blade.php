@@ -15,27 +15,36 @@
 
             <div>
                 <label for="name" class="block font-medium">Product Name</label>
-                <input type="text" name="name" id="name" value="{{ old('name') }}" class="w-full border p-2 rounded" required>
+                <input type="text" name="name" id="name" value="{{ old('name') }}"
+                       class="w-full border p-2 rounded" required>
+                @error('name') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="description" class="block font-medium">Description</label>
                 <textarea name="description" id="description" class="w-full border p-2 rounded">{{ old('description') }}</textarea>
+                @error('description') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="price" class="block font-medium">Price</label>
-                <input type="number" step="0.01" name="price" id="price" value="{{ old('price') }}" class="w-full border p-2 rounded" required>
+                <input type="number" step="0.01" name="price" id="price" value="{{ old('price') }}"
+                       class="w-full border p-2 rounded" required>
+                @error('price') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="sku" class="block font-medium">SKU</label>
-                <input type="text" name="sku" id="sku" value="{{ old('sku') }}" class="w-full border p-2 rounded">
+                <input type="text" name="sku" id="sku" value="{{ old('sku') }}"
+                       class="w-full border p-2 rounded">
+                @error('sku') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="stock_qty" class="block font-medium">Stock Quantity</label>
-                <input type="number" name="stock_qty" id="stock_qty" value="{{ old('stock_qty') }}" class="w-full border p-2 rounded" required>
+                <input type="number" name="stock_qty" id="stock_qty" value="{{ old('stock_qty') }}"
+                       class="w-full border p-2 rounded" required>
+                @error('stock_qty') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -48,6 +57,7 @@
                         </option>
                     @endforeach
                 </select>
+                @error('category_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -56,34 +66,40 @@
                     <option value="1" @selected(old('status') == '1')>Active</option>
                     <option value="0" @selected(old('status') == '0')>Inactive</option>
                 </select>
+                @error('status') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label for="image" class="block font-medium">Upload Image</label>
                 <input type="file" name="image" id="image" class="w-full border p-2 rounded">
+                @error('image') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
             </div>
 
-            <!-- ✅ Show Only Attributes as Checkboxes -->
+            <!-- Product Attributes -->
             @if($attributes->count())
                 <div>
                     <label class="block font-bold text-lg mb-2">Product Attributes</label>
-                    <div class="flex flex-wrap gap-4">
-                        @foreach($attributes as $attribute)
-                            <label class="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    name="attribute_ids[]"
-                                    value="{{ $attribute->id }}"
-                                    @if(is_array(old('attribute_ids')) && in_array($attribute->id, old('attribute_ids'))) checked @endif
-                                >
-                                <span>{{ $attribute->name }}</span>
-                            </label>
-                        @endforeach
-                    </div>
+                    @foreach($attributes as $attribute)
+                        <div class="mb-4">
+                            <p class="font-semibold">{{ $attribute->name }}</p>
+                            <div class="flex flex-wrap gap-4 mt-1">
+                                @foreach($attribute->values as $value)
+                                    <label class="inline-flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="attribute_value_ids[]"
+                                               value="{{ $value->id }}"
+                                               {{ is_array(old('attribute_value_ids')) && in_array($value->id, old('attribute_value_ids')) ? 'checked' : '' }}>
+                                        <span>{{ $value->value }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             @endif
 
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <button type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                 Create Product
             </button>
         </form>
