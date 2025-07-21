@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -37,6 +38,13 @@ Route::resource('products', ProductController::class);
 Route::resource('attributes', ProductAttributeController::class);
 
 });
+
+
+
+Route::post('/products/{product}/reviews', [ReviewController::class, 'storeReview'])->name('reviews.store');
+Route::post('/reviews/{review}/reply', [ReviewController::class, 'storeReply'])->name('reviews.reply');
+
+
 
 
 

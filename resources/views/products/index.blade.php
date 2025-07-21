@@ -1,48 +1,68 @@
 <x-layouts.sidebar>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-gray-800">🛒 Products</h2>
+            <h2 class="text-xl font-semibold text-gray-800">🛍️ Products</h2>
             <a href="{{ route('products.create') }}"
-               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition">
-               + Add Product
+               class="inline-flex items-center bg-gray-600 text-white px-3 py-1.5 rounded hover:bg-gray-700 text-sm">
+                + Add Product
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-6xl mx-auto">
+    <div class="py-6 max-w-6xl mx-auto">
         @if(session('success'))
-            <div class="mb-4 p-3 bg-green-100 text-green-800 rounded shadow">
+            <div class="mb-4 p-2 bg-green-100 text-green-800 rounded text-sm">
                 {{ session('success') }}
             </div>
         @endif
 
         @if($products->count())
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 @foreach($products as $product)
-                    <div class="bg-white border rounded-lg shadow p-4">
-                        @if($product->primaryImage)
-                            <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}"
-                                 alt="{{ $product->name }}"
-                                 class="w-full h-48 object-cover rounded mb-3">
-                        @else
-                            <div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500 mb-3">
-                                No Image
-                            </div>
-                        @endif
+                    <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition p-3">
+                        <div class="aspect-w-4 aspect-h-3 bg-gray-100 rounded overflow-hidden">
+                            @if($product->primaryImage)
+                                <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}"
+                                     alt="{{ $product->name }}"
+                                     class="object-cover w-full h-full">
+                            @else
+                                <div class="flex items-center justify-center w-full h-full text-gray-500 text-sm">
+                                    No Image
+                                </div>
+                            @endif
+                        </div>
 
-                        <h3 class="text-lg font-semibold">{{ $product->name }}</h3>
-                        <p class="text-gray-700 mb-1">{{ $product->category->name ?? 'No Category' }}</p>
-                        <p class="text-gray-900 font-bold mb-3">${{ number_format($product->price, 2) }}</p>
+                        <div class="mt-3">
+                            <h3 class="text-base font-medium text-gray-800 truncate">{{ $product->name }}</h3>
+                            <p class="text-sm text-gray-500">{{ $product->category->name ?? 'Uncategorized' }}</p>
+                        </div>
 
-                        <div class="flex justify-between text-sm">
+                        <div class="mt-2 flex items-center justify-between text-sm">
+                            <span class="text-green-700 font-semibold">${{ number_format($product->price, 2) }}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full
+                                {{ $product->status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                {{ $product->status ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+
+                        <div class="mt-3 flex justify-between text-xs text-gray-600">
                             <a href="{{ route('products.edit', $product) }}"
-                               class="text-blue-600 hover:underline">Edit</a>
+                               class="hover:text-blue-600 font-medium flex items-center gap-1">
+                                ✏️ Edit
+                            </a>
+
+                            <a href="{{ route('products.show', $product) }}"
+                            class="hover:text-indigo-600 font-medium flex items-center gap-1">
+                                👁️ Show
+                            </a>
                             <form action="{{ route('products.destroy', $product) }}"
                                   method="POST"
-                                  onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                  onsubmit="return confirm('Delete this product?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                                <button type="submit" class="hover:text-red-600 font-medium flex items-center gap-1">
+                                    🗑️ Delete
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -53,7 +73,7 @@
                 {{ $products->links() }}
             </div>
         @else
-            <p class="text-center text-gray-500 mt-10">No products available.</p>
+            <p class="text-center text-gray-400 mt-10">No products available.</p>
         @endif
     </div>
 </x-layouts.sidebar>

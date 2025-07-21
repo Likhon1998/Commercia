@@ -22,7 +22,7 @@
                 <div id="value-fields" class="space-y-2">
                     @foreach ($attribute->values as $value)
                         <div class="flex items-center gap-2">
-                            <input type="text" name="values_existing[{{ $value->id }}]" value="{{ $value->value }}"
+                            <input type="text" name="values_existing[{{ $value->id }}]" value="{{ old('values_existing.' . $value->id, $value->value) }}"
                                    class="w-full rounded-md border-gray-300 shadow-sm" required>
                             <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 text-sm">✖</button>
                         </div>

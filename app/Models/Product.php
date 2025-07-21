@@ -38,4 +38,8 @@ class Product extends Model
             'product_attribute_value_id'
         );
     }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

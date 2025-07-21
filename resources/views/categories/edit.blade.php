@@ -20,7 +20,8 @@
             </div>
         @endif
 
-        <form action="{{ route('categories.update', $category) }}" method="POST" class="space-y-6 bg-white p-6 rounded shadow">
+        <form action="{{ route('categories.update', $category->id) }}" method="POST"
+              class="space-y-6 bg-white p-6 rounded shadow">
             @csrf
             @method('PUT')
 
@@ -50,7 +51,7 @@
             <!-- Submit -->
             <div class="flex justify-end">
                 <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow transition">
+                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded shadow transition">
                     💾 Update Category
                 </button>
             </div>

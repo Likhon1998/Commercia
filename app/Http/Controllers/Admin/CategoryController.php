@@ -9,18 +9,18 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-   
+    
     public function index()
     {
         $categories = Category::with('parent')->paginate(10);
         return view('categories.index', compact('categories'));
     }
 
-    
+  
     public function create()
     {
-        $allCategories = Category::all(); 
-        return view('categories.create', compact('allCategories'));
+        $categories = Category::all(); 
+        return view('categories.create', compact('categories'));
     }
 
     
@@ -31,11 +31,11 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
         ]);
 
-        $category = new Category();
-        $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
-        $category->parent_id = $request->parent_id;
-        $category->save();
+        Category::create([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'parent_id' => $request->parent_id,
+        ]);
 
         return redirect()->route('categories.index')->with('success', 'Category created successfully.');
     }
@@ -49,11 +49,13 @@ class CategoryController extends Controller
     
     public function edit(Category $category)
     {
-        $allCategories = Category::where('id', '!=', $category->id)->get(); 
+       
+        $allCategories = Category::where('id', '!=', $category->id)->get();
+
         return view('categories.edit', compact('category', 'allCategories'));
     }
 
-    
+   
     public function update(Request $request, Category $category)
     {
         $request->validate([
@@ -61,10 +63,11 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id|not_in:' . $category->id,
         ]);
 
-        $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
-        $category->parent_id = $request->parent_id;
-        $category->save();
+        $category->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'parent_id' => $request->parent_id,
+        ]);
 
         return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
     }
@@ -72,9 +75,12 @@ class CategoryController extends Controller
     
     public function destroy(Category $category)
     {
+        if ($category->children()->exists()) {
+            return redirect()->route('categories.index')->with('error', 'Cannot delete a category that has subcategories.');
+        }
+
         $category->delete();
+
         return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
     }
-
-    
 }
