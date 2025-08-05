@@ -9,7 +9,7 @@
         </div>
     </x-slot>
 
-    <div class="py-10 px-4 max-w-5xl mx-auto">
+    <div class="py-10 px-4 max-w-5xl mx-auto" x-data="{ confirmingId: null }">
         <div class="flex justify-between items-center mb-6">
             <p class="text-gray-700 text-sm">
                 Total Permissions: 
@@ -52,15 +52,11 @@
                                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs rounded-md shadow-sm transition">
                                             ✏️ Edit
                                         </a>
-                                        <form action="{{ route('permissions.destroy', $permission) }}" method="POST"
-                                              onsubmit="return confirm('Are you sure you want to delete this permission?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-xs rounded-md shadow-sm transition">
-                                                🗑️ Delete
-                                            </button>
-                                        </form>
+                                        <!-- Delete button -->
+                                        <button @click.prevent="confirmingId = {{ $permission->id }}"
+                                                class="bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800 px-3 py-1.5 text-xs rounded-md shadow-sm transition flex items-center gap-1">
+                                            🗑️ Delete
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -72,6 +68,32 @@
                     {{ $permissions->links() }}
                 </div>
             @endif
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div x-show="confirmingId"
+             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+             x-cloak>
+            <div class="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2">Delete Confirmation</h2>
+                <p class="text-sm text-gray-600">Are you sure you want to delete this permission? This action cannot be undone.</p>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <button @click="confirmingId = null"
+                            class="px-3 py-1 text-sm bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                        Cancel
+                    </button>
+
+                    <form :action="`/permissions/${confirmingId}`" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                                class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
+                            Confirm Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </x-layouts.sidebar>

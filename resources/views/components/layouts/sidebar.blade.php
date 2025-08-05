@@ -46,6 +46,10 @@
                    class="block px-3 py-2 rounded-md hover:bg-green-700 transition {{ request()->routeIs('permissions.*') ? 'bg-green-700 font-semibold' : '' }}">
                     🛡️ Permissions
                 </a>
+                <a href="{{ route('people.index') }}"
+                    class="block px-3 py-2 rounded-md hover:bg-green-700 transition {{ request()->routeIs('people.*') ? 'bg-green-700 font-semibold' : '' }}">
+                    🙋 People
+                </a>
                 <a href="{{ route('users.index') }}"
                    class="block px-3 py-2 rounded-md hover:bg-green-700 transition {{ request()->routeIs('users.*') ? 'bg-green-700 font-semibold' : '' }}">
                     👤 Users

@@ -23,9 +23,9 @@ class Review extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function replies()
+{
+    return $this->hasMany(ReviewReply::class)->whereNull('parent_id');
+}
 
-    public function replies(): HasMany
-    {
-        return $this->hasMany(ReviewReply::class);
-    }
 }

@@ -9,7 +9,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6 max-w-6xl mx-auto">
+    <div class="py-6 max-w-6xl mx-auto" x-data="{ confirmingProductId: null }">
         @if(session('success'))
             <div class="mb-4 p-2 bg-green-100 text-green-800 rounded text-sm">
                 {{ session('success') }}
@@ -52,18 +52,20 @@
                             </a>
 
                             <a href="{{ route('products.show', $product) }}"
-                            class="hover:text-indigo-600 font-medium flex items-center gap-1">
+                               class="hover:text-indigo-600 font-medium flex items-center gap-1">
                                 👁️ Show
                             </a>
-                            <form action="{{ route('products.destroy', $product) }}"
-                                  method="POST"
-                                  onsubmit="return confirm('Delete this product?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="hover:text-red-600 font-medium flex items-center gap-1">
-                                    🗑️ Delete
-                                </button>
-                            </form>
+
+                            <!-- Improved Delete Button -->
+                            <button @click.prevent="confirmingProductId = {{ $product->id }}"
+                                    class="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200 hover:text-red-800 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-6 0V5a2 2 0 012-2h2a2 2 0 012 2v2"/>
+                                </svg>
+                                Delete
+                            </button>
                         </div>
                     </div>
                 @endforeach
@@ -75,5 +77,31 @@
         @else
             <p class="text-center text-gray-400 mt-10">No products available.</p>
         @endif
+
+        <!-- Confirmation Modal -->
+        <div x-show="confirmingProductId"
+             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+             x-cloak>
+            <div class="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2">Delete Confirmation</h2>
+                <p class="text-sm text-gray-600">Are you sure you want to delete this product? This action cannot be undone.</p>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <button @click="confirmingProductId = null"
+                            class="px-3 py-1 text-sm bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                        Cancel
+                    </button>
+
+                    <form :action="`/products/${confirmingProductId}`" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                                class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
+                            Confirm Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </x-layouts.sidebar>

@@ -63,10 +63,10 @@
                 @endforelse
             </tbody>
         </table>
-
         {{-- Pagination --}}
         <div class="mt-6">
             {{ $roles->links() }}
         </div>
+        
     </div>
 </x-layouts.sidebar>

@@ -4,16 +4,14 @@
     </x-slot>
 
     <div class="max-w-5xl mx-auto py-6">
-        {{-- Product Section --}}
         <div class="grid md:grid-cols-2 gap-8">
-            {{-- Product Images --}}
             <div>
                 @if($product->primaryImage)
                     <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}"
                          class="w-full rounded-lg shadow" alt="Main image">
                 @endif
 
-                @if($product->images->count() > 1)
+                @if($product->images && $product->images->count() > 1)
                     <div class="flex gap-2 mt-4">
                         @foreach($product->images->where('is_primary', false) as $img)
                             <img src="{{ asset('storage/' . $img->image_path) }}"
@@ -22,8 +20,6 @@
                     </div>
                 @endif
             </div>
-
-            {{-- Product Info --}}
             <div>
                 <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ $product->name }}</h3>
                 <p class="text-sm text-gray-600 mb-2"><strong>Category:</strong> {{ $product->category->name ?? 'N/A' }}</p>
@@ -36,7 +32,7 @@
                     @endif
                 </p>
 
-                @if($product->attributeValues->count())
+                @if($product->attributeValues && $product->attributeValues->count())
                     <div class="mb-3">
                         <strong class="block text-sm text-gray-700">Attributes:</strong>
                         <ul class="list-disc pl-5 text-sm text-gray-600">
@@ -51,10 +47,8 @@
                     <strong class="text-sm text-gray-700">Description:</strong>
                     <p class="text-sm text-gray-600 mt-1">{{ $product->description }}</p>
                 </div>
-
-                {{-- Action Buttons --}}
                 <div class="mt-6 flex gap-3">
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow text-sm">
+                    <button class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded shadow text-sm">
                         🛒 Add to Cart
                     </button>
                     <button class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded shadow text-sm">
@@ -64,11 +58,8 @@
             </div>
         </div>
 
-        {{-- Reviews Section --}}
         <div class="mt-12 bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">📝 Customer Reviews</h3>
-
-            {{-- Add Review --}}
             @auth
                 <form action="{{ route('reviews.store', $product) }}" method="POST" class="mb-6">
                     @csrf
@@ -84,7 +75,6 @@
                 <p class="text-sm text-gray-500 mb-4">Please <a href="{{ route('login') }}" class="text-blue-600">log in</a> to leave a review.</p>
             @endauth
 
-            {{-- Display Reviews --}}
             @forelse($product->reviews as $review)
                 <div class="mb-6 border-b pb-4">
                     <div class="flex items-center justify-between mb-1">
@@ -93,17 +83,22 @@
                     </div>
                     <p class="text-gray-700 text-sm">{{ $review->comment }}</p>
 
-                    {{-- Replies --}}
-                    <div class="ml-4 mt-3 space-y-2">
-                        @foreach($review->replies as $reply)
-                            <div class="bg-gray-100 p-2 rounded">
-                                <span class="text-xs text-gray-500">{{ $reply->user->name ?? 'Unknown' }} replied:</span>
-                                <p class="text-sm text-gray-700">{{ $reply->reply }}</p>
-                            </div>
-                        @endforeach
-                    </div>
+                    @can('delete', $review)
+                        <form action="{{ route('reviews.destroy', $review->id) }}" method="POST" class="mt-2">
+                            @csrf
+                            @method('DELETE')
+                            <button class="text-xs text-red-600 hover:underline">Delete</button>
+                        </form>
+                    @endcan
 
-                    {{-- Reply Form --}}
+                    @if($review->replies && $review->replies->count())
+                        <div class="ml-4 mt-3 space-y-2">
+                            @foreach($review->replies as $reply)
+                                @include('components.review-reply', ['reply' => $reply])
+                            @endforeach
+                        </div>
+                    @endif
+
                     @auth
                         <form action="{{ route('reviews.reply', $review) }}" method="POST" class="mt-3 ml-4">
                             @csrf

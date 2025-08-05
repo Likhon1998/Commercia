@@ -38,7 +38,7 @@ class ProductController extends Controller
             'stock_qty'             => 'required|integer',
             'category_id'           => 'required|exists:categories,id',
             'status'                => 'required|in:1,0',
-            'image'                 => 'nullable|image|max:2048',
+            'image'                 => 'nullable|image|max:10240',
             'attribute_value_ids'   => 'nullable|array',
             'attribute_value_ids.*' => 'exists:product_attribute_values,id',
         ]);

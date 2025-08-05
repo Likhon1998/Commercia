@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PermissionController;
@@ -44,6 +45,11 @@ Route::resource('attributes', ProductAttributeController::class);
 Route::post('/products/{product}/reviews', [ReviewController::class, 'storeReview'])->name('reviews.store');
 Route::post('/reviews/{review}/reply', [ReviewController::class, 'storeReply'])->name('reviews.reply');
 
+Route::delete('/reviews/{review}', [ReviewController::class, 'destroyReview'])->name('reviews.destroy');
+Route::delete('/review-replies/{reply}', [ReviewController::class, 'destroyReply'])->name('reviews.replies.destroy');
+Route::get('/reviews/replies/{reply}/edit', [ReviewController::class, 'editReply'])->name('reviews.replies.edit');
+Route::put('/reviews/replies/{reply}', [ReviewController::class, 'updateReply'])->name('reviews.replies.update');
+Route::resource('people', PeopleController::class)->middleware(['auth']);
 
 
 

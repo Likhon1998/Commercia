@@ -6,7 +6,7 @@
 
 <div class="space-y-5 text-sm text-gray-700">
 
-    {{-- Product Name --}}
+    
     <div>
         <label for="name" class="block font-medium">Product Name <span class="text-red-500">*</span></label>
         <input type="text" name="name" id="name"
@@ -14,14 +14,14 @@
             class="w-full border rounded px-3 py-2" required>
     </div>
 
-    {{-- Description --}}
+   
     <div>
         <label for="description" class="block font-medium">Description</label>
         <textarea name="description" id="description" rows="3"
             class="w-full border rounded px-3 py-2">{{ old('description', $product->description ?? '') }}</textarea>
     </div>
 
-    {{-- Price --}}
+  
     <div>
         <label for="price" class="block font-medium">Price <span class="text-red-500">*</span></label>
         <input type="number" step="0.01" name="price" id="price"
@@ -29,7 +29,7 @@
             class="w-full border rounded px-3 py-2" required>
     </div>
 
-    {{-- SKU --}}
+  
     <div>
         <label for="sku" class="block font-medium">SKU</label>
         <input type="text" name="sku" id="sku"
@@ -37,7 +37,7 @@
             class="w-full border rounded px-3 py-2">
     </div>
 
-    {{-- Stock Quantity --}}
+    
     <div>
         <label for="stock_qty" class="block font-medium">Stock Qty <span class="text-red-500">*</span></label>
         <input type="number" name="stock_qty" id="stock_qty"
@@ -45,7 +45,7 @@
             class="w-full border rounded px-3 py-2" required>
     </div>
 
-    {{-- Category --}}
+  
     <div>
         <label for="category_id" class="block font-medium">Category <span class="text-red-500">*</span></label>
         <select name="category_id" id="category_id"
@@ -60,7 +60,7 @@
         </select>
     </div>
 
-    {{-- Status --}}
+    
     <div>
         <label for="status" class="block font-medium">Status <span class="text-red-500">*</span></label>
         <select name="status" id="status"
@@ -70,7 +70,7 @@
         </select>
     </div>
 
-    {{-- Product Image --}}
+   
     <div>
         <label for="image" class="block font-medium">Product Image</label>
         <input type="file" name="image" id="image"
@@ -84,7 +84,6 @@
         @endif
     </div>
 
-    {{-- Attributes & Values --}}
     @if(isset($attributes) && $attributes->count())
     <div>
         <label class="block font-medium mb-1">Product Attributes</label>
