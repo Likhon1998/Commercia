@@ -1,62 +1,62 @@
 <x-layouts.sidebar>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-gray-800">📂 Categories</h2>
+        <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">📂 All Categories</h2>
             <a href="{{ route('categories.create') }}"
-               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow transition">
-               + Add Category
+               class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow">
+                ➕ Add Category
             </a>
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-4xl mx-auto">
-        @if(session('success'))
-            <div class="mb-4 p-3 bg-green-100 text-green-800 rounded shadow">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if($categories->isEmpty())
-            <p class="text-center text-gray-500">No categories found.</p>
-        @else
-            <table class="w-full text-left text-sm border-collapse">
-                <thead class="bg-gray-100 text-gray-700 font-semibold">
-                    <tr>
-                        <th class="px-6 py-3">Serial</th>
-                        <th class="px-6 py-3">Name</th>
-                        <th class="px-6 py-3">Parent</th>
-                        <th class="px-6 py-3 text-right">Actions</th>
+    <div class="px-6 py-6">
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="min-w-full table-auto">
+                <thead class="bg-gray-100">
+                    <tr class="text-left text-sm text-gray-600">
+                        <th class="px-4 py-3">#</th>
+                        <th class="px-4 py-3">Name</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @foreach ($categories as $index => $category)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-3 text-gray-600">{{ $categories->firstItem() + $index }}</td>
-                            <td class="px-6 py-3">{{ $category->name }}</td>
-                            <td class="px-6 py-3 text-gray-500">{{ $category->parent?->name ?? '-' }}</td>
-                            <td class="px-6 py-3 text-right space-x-2 whitespace-nowrap">
-                                <a href="{{ route('categories.edit', $category) }}"
-                                   class="inline-block text-white bg-blue-600 px-3 py-1 rounded shadow hover:bg-blue-700 text-xs transition">
-                                   ✏️ Edit
+                <tbody>
+                    @forelse($categories as $key => $category)
+                        <tr class="border-t text-sm text-gray-700 hover:bg-gray-50">
+                            <td class="px-4 py-3">{{ $key + 1 }}</td>
+                            <td class="px-4 py-3 font-medium">{{ $category->name }}</td>
+                            <td class="px-4 py-3">
+                                @if($category->status === 'active')
+                                    <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Active</span>
+                                @else
+                                    <span class="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">Inactive</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-right space-x-2">
+                                <a href="{{ route('categories.edit', $category->id) }}"
+                                   class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">
+                                    ✏️ Edit
                                 </a>
-                                <form action="{{ route('categories.destroy', $category) }}" method="POST" class="inline"
-                                      onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                            class="inline-block text-white bg-red-600 px-3 py-1 rounded shadow hover:bg-red-700 text-xs transition">
+                                            onclick="return confirm('Are you sure you want to delete this category?')"
+                                            class="text-red-600 hover:text-red-800 text-sm font-semibold">
                                         🗑️ Delete
                                     </button>
                                 </form>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500">
+                                No categories found. <a href="{{ route('categories.create') }}" class="text-indigo-600 underline">Create one</a>.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
-
-            <div class="mt-4">
-                {{ $categories->links() }}
-            </div>
-        @endif
+        </div>
     </div>
 </x-layouts.sidebar>

@@ -54,6 +54,16 @@
                    class="block px-3 py-2 rounded-md hover:bg-green-700 transition {{ request()->routeIs('users.*') ? 'bg-green-700 font-semibold' : '' }}">
                     👤 Users
                 </a>
+            
+                <a href="{{ route('outlets.index') }}"
+                 class="block px-3 py-2 rounded-md hover:bg-green-700 transition {{ request()->routeIs('outlates.*') ? 'bg-green-700 font-semibold' : '' }}">
+                    🏪 Manage Outlet
+                </a>
+
+                <a href="{{ route('brands.index') }}"
+                 class="block px-3 py-2 rounded-md hover:bg-green-700 transition {{ request()->routeIs('brands.*') ? 'bg-green-700 font-semibold' : '' }}">
+                    🏷️ Manage Brand
+                </a>
                 <a href="{{ route('categories.index') }}"
                    class="block px-3 py-2 rounded-md hover:bg-green-700 transition {{ request()->routeIs('categories.*') ? 'bg-green-700 font-semibold' : '' }}">
                     📂 Categories

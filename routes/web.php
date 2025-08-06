@@ -10,6 +10,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\ProductAttributeController;
+use App\Http\Controllers\OutletController;
+use App\Http\Controllers\BrandController;
 
 Route::view('/', 'welcome');
 
@@ -52,9 +54,8 @@ Route::put('/reviews/replies/{reply}', [ReviewController::class, 'updateReply'])
 Route::resource('people', PeopleController::class)->middleware(['auth']);
 
 
-
-
-
+Route::resource('outlets', OutletController::class)->middleware(['auth']);
+Route::resource('brands', BrandController::class)->middleware(['auth']);
 
 
 require __DIR__.'/auth.php';
