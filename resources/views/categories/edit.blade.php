@@ -34,21 +34,27 @@
                     @enderror
                 </div>
 
-                {{-- Status --}}
+                {{-- Parent Category Dropdown --}}
                 <div>
-                    <label for="status" class="block text-sm font-semibold text-gray-700 mb-1">
-                        Status <span class="text-red-500">*</span>
+                    <label for="parent_id" class="block text-sm font-semibold text-gray-700 mb-1">
+                        Parent Category
                     </label>
                     <select
-                        id="status"
-                        name="status"
+                        id="parent_id"
+                        name="parent_id"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm"
-                        required
                     >
-                        <option value="active" {{ old('status', $category->status) === 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="inactive" {{ old('status', $category->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="">-- None --</option>
+                        @foreach ($categories as $parent)
+                            {{-- Prevent selecting self as parent --}}
+                            @if($parent->id != $category->id)
+                                <option value="{{ $parent->id }}" {{ old('parent_id', $category->parent_id) == $parent->id ? 'selected' : '' }}>
+                                    {{ $parent->name }}
+                                </option>
+                            @endif
+                        @endforeach
                     </select>
-                    @error('status')
+                    @error('parent_id')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -61,7 +67,7 @@
                     </a>
                     <button
                         type="submit"
-                        class="bg-blue-600 text-white px-5 py-2 rounded-md shadow hover:bg-blue-700 transition"
+                        class="bg-green-600 text-white px-5 py-2 rounded-md shadow hover:bg-green-700 transition"
                     >
                         Update
                     </button>
