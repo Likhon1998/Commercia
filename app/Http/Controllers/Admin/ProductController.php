@@ -13,6 +13,8 @@ use App\Models\VatGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -68,9 +70,9 @@ class ProductController extends Controller
     {
         $vatType = $data['vat_type'] ?? null;
         $vatId = $data['vat_id'] ?? null;
-        $costPriceInc = $data['cost_price_inclusive'] ?? null;
-        $costPriceExc = $data['cost_price_exclusive'] ?? null;
-        $marginPercent = $data['profit_margin'] ?? 0;
+        $costPriceInc = $data['cost_price_inclusive'] ?? $data['cost_price_inc_vat'] ?? null;
+        $costPriceExc = $data['cost_price_exclusive'] ?? $data['cost_price_exc_vat'] ?? null;
+        $marginPercent = $data['profit_margin'] ?? $data['margin_percent'] ?? 0;
         $discountType = $data['discount_type'] ?? null;
         $discountValue = $data['discount_value'] ?? 0;
         $costPriceType = $data['cost_price_type'] ?? 'inclusive';
@@ -101,87 +103,126 @@ class ProductController extends Controller
         $finalSellingPrice = max(0, $sellingPrice - $discountAmount);
 
         return [
-            'cost_price_exclusive' => round($costExclusive, 2),
-            'cost_price_inclusive' => round($costInclusive, 2),
-            'selling_price_exc_vat' => round($finalSellingPrice, 2),
-            'selling_price_inc_vat' => round($finalSellingPrice * (1 + $vatPercent / 100), 2),
-            'vat_id' => $vatId,
-            'vat_type' => $vatType,
-            'discount_percent' => $discountType === 'percentage' ? $discountValue : null,
-            'discount_amount' => $discountType === 'amount' ? $discountValue : null,
+            'cost_price_exc_vat'     => round($costExclusive, 2),
+            'cost_price_inc_vat'     => round($costInclusive, 2),
+            'selling_price_exc_vat'  => round($finalSellingPrice, 2),
+            'selling_price_inc_vat'  => round($finalSellingPrice * (1 + $vatPercent / 100), 2),
+            'vat_percent'            => $vatPercent,
+            'vat_type'               => $vatType,
+            'discount_percent'       => $discountType === 'percentage' ? $discountValue : null,
+            'discount_amount'        => $discountType === 'amount' ? $discountValue : null,
+            'margin_percent'         => $marginPercent,
+            'profit_percent'         => $marginPercent,
         ];
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'product_type'          => 'required|in:normal,combo,variant',
-            'name'                  => 'required|string|max:255',
-            'slug'                  => 'nullable|string|max:255|unique:products,slug',
-            'model'                 => 'nullable|string|max:255',
-            'brand_id'              => 'nullable|exists:brands,id',
-            'category_id'           => 'required|exists:categories,id',
-            'sub_category_id'       => 'nullable|exists:categories,id',
-            'supplier_id'           => 'nullable|exists:people,id',
-            'unit_id'               => 'nullable|exists:units,id',
-            'min_qty_alert'         => 'nullable|integer|min:0',
-            'price'                 => 'required|numeric|min:0',
-            'sku'                   => 'nullable|string|max:100|unique:products,sku',
-            'stock_qty'             => 'required|integer|min:0',
+   public function store(Request $request)
+{
+    $input = $request->all();
 
-            'vat_type'              => 'nullable|string|in:vat,group',
-            'vat_id'                => 'nullable|string',
-            'cost_price_type'       => 'nullable|string|in:inclusive,exclusive',
-            'cost_price_inclusive'  => 'nullable|numeric|min:0',
-            'cost_price_exclusive'  => 'nullable|numeric|min:0',
-            'profit_margin'         => 'nullable|numeric|min:0|max:100',
-            'discount_type'         => 'nullable|string|in:percentage,amount',
-            'discount_value'        => 'nullable|numeric|min:0',
-
-            'is_barcode'            => 'boolean',
-            'barcode_source'        => 'nullable|in:generate,supplier',
-            'image'                 => 'nullable|image|max:10240',
-            'is_warranty'           => 'boolean',
-            'is_salable'            => 'boolean',
-            'is_expirable'          => 'boolean',
-            'is_serviceable'        => 'boolean',
-            'hsn_code'              => 'nullable|string|max:50',
-            'show_on_website'       => 'boolean',
-            'near_expiry_days'      => 'nullable|integer|min:0',
-            'warning_expiry_days'   => 'nullable|integer|min:0',
-            'tags'                  => 'nullable|string',
-            'description'           => 'nullable|string',
-            'additional_information'=> 'nullable|string',
-            'status'                => 'required|in:1,0',
-        ]);
-
-        if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['name']);
-        }
-
-        $booleanFields = ['is_barcode', 'is_warranty', 'is_salable', 'is_expirable', 'is_serviceable', 'show_on_website'];
-        foreach ($booleanFields as $field) {
-            $validated[$field] = $request->has($field);
-        }
-
-        $prices = $this->calculateSellingPrices($request->all());
-        $validated = array_merge($validated, $prices);
-
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public');
-            $validated['image'] = $path;
-        }
-
-        Product::create($validated);
-
-        return redirect()->route('products.index')->with('success', 'Product created successfully.');
+    if (isset($input['selling_price'])) {
+        $input['price'] = $input['selling_price'];
     }
+
+    $validator = Validator::make($input, [
+        'product_type'          => 'required|in:normal,combo,variant',
+        'name'                  => 'required|string|max:255',
+        'slug'                  => 'nullable|string|max:255|unique:products,slug',
+        'model'                 => 'nullable|string|max:255',
+        'brand_id'              => 'nullable|exists:brands,id',
+        'category_id'           => 'required|exists:categories,id',
+        'sub_category_id'       => 'nullable|exists:categories,id',
+        'supplier_id'           => 'nullable|exists:people,id',
+        'unit_id'               => 'nullable|exists:units,id',
+        'min_qty_alert'         => 'nullable|integer|min:0',
+        'price'                 => 'required|numeric|min:0',
+        'sku'                   => 'nullable|string|max:100|unique:products,sku',
+        'discount_percent'      => 'nullable|numeric|min:0|max:100',
+        'vat_type'              => 'nullable|string|in:vat,group',
+        'vat_id'                => 'nullable|exists:vats,id',
+        'vat_percent'           => 'nullable|numeric|min:0|max:100',
+        'discount_type'         => 'nullable|string|in:percentage,amount',
+        'is_barcode'            => 'sometimes|boolean',
+        'barcode_source'        => 'nullable|string|max:100',
+        'image'                 => 'nullable|image|max:10240',
+        'is_warranty'           => 'sometimes|boolean',
+        'is_salable'            => 'sometimes|boolean',
+        'is_expirable'          => 'sometimes|boolean',
+        'is_serviceable'        => 'sometimes|boolean',
+        'hsn_code'              => 'nullable|string|max:50',
+        'show_on_website'       => 'sometimes|boolean',
+        'near_expiry_days'      => 'nullable|integer|min:0',
+        'warning_expiry_days'   => 'nullable|integer|min:0',
+        'cost_price_exc_vat'    => 'nullable|numeric|min:0',
+        'cost_price_inc_vat'    => 'nullable|numeric|min:0',
+        'margin_percent'        => 'nullable|numeric|min:0|max:100',
+        'selling_price_exc_vat' => 'nullable|numeric|min:0',
+        'selling_price_inc_vat' => 'nullable|numeric|min:0',
+        'profit_percent'        => 'nullable|numeric|min:0|max:100',
+        'tags'                  => 'nullable|string',
+        'description'           => 'nullable|string',
+        'additional_information'=> 'nullable|string',
+        'status'                => 'required|in:1,0',
+    ]);
+
+    if ($validator->fails()) {
+        dd('Validation errors:', $validator->errors()->all());
+    }
+
+    $validated = $validator->validated();
+
+    // Auto-generate slug if empty
+    if (empty($validated['slug'])) {
+        $slug = Str::slug($validated['name']);
+        $count = Product::where('slug', 'like', "$slug%")->count();
+        if ($count > 0) {
+            $slug .= '-' . ($count + 1);
+        }
+        $validated['slug'] = $slug;
+    }
+
+    // Fix boolean unchecked checkboxes
+    $booleanFields = ['is_barcode', 'is_warranty', 'is_salable', 'is_expirable', 'is_serviceable', 'show_on_website'];
+    foreach ($booleanFields as $field) {
+        $validated[$field] = $request->has($field) ? (bool) $request->input($field) : false;
+    }
+
+    $prices = $this->calculateSellingPrices($validated);
+    $pricesFiltered = collect($prices)->only([
+        'cost_price_exc_vat',
+        'cost_price_inc_vat',
+        'selling_price_exc_vat',
+        'selling_price_inc_vat',
+        'vat_percent',
+        'vat_type',
+        'discount_percent',
+        'discount_amount',
+        'margin_percent',
+        'profit_percent',
+    ])->toArray();
+
+    $validated = array_merge($validated, $pricesFiltered);
+
+    if ($request->hasFile('image')) {
+        $path = $request->file('image')->store('products', 'public');
+        $validated['image'] = $path;
+    }
+
+    try {
+        $product = Product::create($validated);
+    } catch (\Exception $e) {
+        dd('Create product exception:', $e->getMessage());
+    }
+
+    return redirect()->route('products.index')->with('success', 'Product created successfully.');
+}
+
 
     public function edit(Product $product)
     {
         $brands = Brand::where('status', 'active')->get();
         $categories = Category::where('status', 'active')->get();
-        $suppliers = People::whereJsonContains('person_type', 'supplier')->where('status', 'active')->get();
+        $suppliers = People::whereJsonContains('person_type', 'supplier')->where('status', 1)->get();
         $units = Unit::where('status', 'active')->get();
         $vats = Vat::where('status', 'active')->get();
         $vatGroups = VatGroup::where('status', 'active')->get();
@@ -210,12 +251,9 @@ class ProductController extends Controller
             'supplier_id'           => 'nullable|exists:people,id',
             'unit_id'               => 'nullable|exists:units,id',
             'min_qty_alert'         => 'nullable|integer|min:0',
-            'price'                 => 'required|numeric|min:0',
-            'sku'                   => 'nullable|string|max:100|unique:products,sku,' . $product->id,
-            'stock_qty'             => 'required|integer|min:0',
 
             'vat_type'              => 'nullable|string|in:vat,group',
-            'vat_id'                => 'nullable|string',
+            'vat_id'                => 'nullable|exists:vats,id',
             'cost_price_type'       => 'nullable|string|in:inclusive,exclusive',
             'cost_price_inclusive'  => 'nullable|numeric|min:0',
             'cost_price_exclusive'  => 'nullable|numeric|min:0',
@@ -223,36 +261,61 @@ class ProductController extends Controller
             'discount_type'         => 'nullable|string|in:percentage,amount',
             'discount_value'        => 'nullable|numeric|min:0',
 
-            'is_barcode'            => 'boolean',
+            'is_barcode'            => 'sometimes|boolean',
             'barcode_source'        => 'nullable|in:generate,supplier',
             'image'                 => 'nullable|image|max:10240',
-            'is_warranty'           => 'boolean',
-            'is_salable'            => 'boolean',
-            'is_expirable'          => 'boolean',
-            'is_serviceable'        => 'boolean',
+            'is_warranty'           => 'sometimes|boolean',
+            'is_salable'            => 'sometimes|boolean',
+            'is_expirable'          => 'sometimes|boolean',
+            'is_serviceable'        => 'sometimes|boolean',
             'hsn_code'              => 'nullable|string|max:50',
-            'show_on_website'       => 'boolean',
+            'show_on_website'       => 'sometimes|boolean',
             'near_expiry_days'      => 'nullable|integer|min:0',
             'warning_expiry_days'   => 'nullable|integer|min:0',
             'tags'                  => 'nullable|string',
             'description'           => 'nullable|string',
             'additional_information'=> 'nullable|string',
             'status'                => 'required|in:1,0',
+            'price'                 => 'required|numeric|min:0',
+            'sku'                   => 'nullable|string|max:100|unique:products,sku,' . $product->id,
+            'stock_qty'             => 'required|integer|min:0',
         ]);
 
+        // Auto-generate slug if empty
         if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['name']);
+            $slug = Str::slug($validated['name']);
+            $count = Product::where('slug', 'like', "$slug%")->where('id', '!=', $product->id)->count();
+            if ($count > 0) {
+                $slug .= '-' . ($count + 1);
+            }
+            $validated['slug'] = $slug;
         }
 
-        // Handle booleans explicitly to ensure false if unchecked
+        // Fix boolean unchecked checkboxes
         $booleanFields = ['is_barcode', 'is_warranty', 'is_salable', 'is_expirable', 'is_serviceable', 'show_on_website'];
         foreach ($booleanFields as $field) {
-            $validated[$field] = $request->has($field);
+            $validated[$field] = $request->has($field) ? (bool) $request->input($field) : false;
         }
 
-        $prices = $this->calculateSellingPrices($request->all());
-        $validated = array_merge($validated, $prices);
+        // Calculate prices and margins
+        $prices = $this->calculateSellingPrices($validated);
 
+        $pricesFiltered = collect($prices)->only([
+            'cost_price_exc_vat',
+            'cost_price_inc_vat',
+            'selling_price_exc_vat',
+            'selling_price_inc_vat',
+            'vat_percent',
+            'vat_type',
+            'discount_percent',
+            'discount_amount',
+            'margin_percent',
+            'profit_percent',
+        ])->toArray();
+
+        $validated = array_merge($validated, $pricesFiltered);
+
+        // Image upload & delete old if exists
         if ($request->hasFile('image')) {
             if ($product->image && Storage::disk('public')->exists($product->image)) {
                 Storage::disk('public')->delete($product->image);

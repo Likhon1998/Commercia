@@ -30,12 +30,15 @@ return new class extends Migration
             $table->integer('min_qty_alert')->default(0);
             $table->decimal('price', 15, 2)->default(0);
             $table->string('sku')->nullable()->unique();
-            $table->integer('stock_qty')->default(0);
             $table->decimal('discount_percent', 5, 2)->default(0);
 
-            // VAT
+            // VAT related
+            $table->enum('vat_type', ['vat', 'group'])->nullable();
+            $table->foreignId('vat_id')->nullable()->constrained('vats')->nullOnDelete();
             $table->decimal('vat_percent', 5, 2)->default(0);
-            $table->enum('vat_type', ['exclusive', 'inclusive'])->default('exclusive');
+
+            // Discount
+            $table->enum('discount_type', ['percentage', 'amount'])->nullable();
 
             // Barcode
             $table->boolean('is_barcode')->default(false);
@@ -67,7 +70,7 @@ return new class extends Migration
             $table->decimal('profit_percent', 5, 2)->default(0);
 
             // Tags & descriptions
-            $table->text('tags')->nullable(); // comma separated
+            $table->text('tags')->nullable(); // comma separated tags
             $table->longText('description')->nullable();
             $table->longText('additional_information')->nullable();
 

@@ -1,112 +1,104 @@
 <x-layouts.sidebar>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-800">🛍️ Products</h2>
+            <h2 class="text-2xl font-semibold text-gray-800">📦 Products</h2>
             <a href="{{ route('products.create') }}"
-               class="inline-flex items-center bg-indigo-600 text-white px-4 py-1.5 rounded hover:bg-indigo-700 text-sm transition">
-                + Add Product
+               class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition">
+                + Add New Product
             </a>
         </div>
     </x-slot>
 
-    <div class="py-6 max-w-7xl mx-auto" x-data="{ confirmingProductId: null }">
-        @if(session('success'))
-            <div class="mb-4 p-3 bg-green-100 text-green-800 rounded text-sm shadow-sm">
-                {{ session('success') }}
-            </div>
-        @endif
+    <div class="max-w-7xl mx-auto mt-6 bg-white p-6 rounded shadow">
 
-        @if($products->count())
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                @foreach($products as $product)
-                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition p-4 flex flex-col">
-                        <div class="aspect-w-4 aspect-h-3 rounded overflow-hidden bg-gray-100">
-                            @if($product->primaryImage)
-                                <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}"
-                                     alt="{{ $product->name }}"
-                                     class="object-cover w-full h-full">
+        <!-- Search form -->
+        <form method="GET" action="{{ route('products.index') }}" class="mb-4 flex gap-2">
+            <input type="text" name="search" value="{{ request('search') }}"
+                   placeholder="Search by product name or model"
+                   class="flex-grow border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <button type="submit"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+                Search
+            </button>
+        </form>
+
+        <!-- Products table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-300 rounded">
+                <thead class="bg-indigo-100 text-indigo-700 font-semibold">
+                    <tr>
+                        <th class="border px-4 py-2 text-center">
+                            <input type="checkbox" onclick="toggleAll(this)">
+                        </th>
+                        <th class="border px-4 py-2 text-left">Sl</th>
+                        <th class="border px-4 py-2 text-left">Product Name</th>
+                        <th class="border px-4 py-2 text-left">Product Model</th>
+                        <th class="border px-4 py-2 text-left">Category</th>
+                        <th class="border px-4 py-2 text-left">Sub Category</th>
+                        <th class="border px-4 py-2 text-left">Brand</th>
+                        <th class="border px-4 py-2 text-left">Barcode/QR-code</th>
+                        <th class="border px-4 py-2 text-left">Supplier Name</th>
+                        <th class="border px-4 py-2 text-right">Sale Price (BDT)</th>
+                        <th class="border px-4 py-2 text-right">Supplier Price (BDT)</th>
+                        <th class="border px-4 py-2 text-center">Image</th>
+                        <th class="border px-4 py-2 text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($products as $product)
+                    <tr class="hover:bg-indigo-50">
+                        <td class="border px-4 py-2 text-center">
+                            <input type="checkbox" name="selected_products[]" value="{{ $product->id }}">
+                        </td>
+                        <td class="border px-4 py-2">{{ $loop->iteration + ($products->currentPage() - 1) * $products->perPage() }}</td>
+                        <td class="border px-4 py-2">{{ $product->name }}</td>
+                        <td class="border px-4 py-2">{{ $product->model ?? '-' }}</td>
+                        <td class="border px-4 py-2">{{ $product->category ? $product->category->name : '-' }}</td>
+                        <td class="border px-4 py-2">{{ $product->subCategory ? $product->subCategory->name : '-' }}</td>
+                        <td class="border px-4 py-2">{{ $product->brand ? $product->brand->name : '-' }}</td>
+                        <td class="border px-4 py-2">{{ $product->barcode_source ?? '-' }}</td>
+                        <td class="border px-4 py-2">{{ $product->supplier ? $product->supplier->name : '-' }}</td>
+                        <td class="border px-4 py-2 text-right">{{ number_format($product->selling_price_inc_vat ?? 0, 2) }}</td>
+                        <td class="border px-4 py-2 text-right">{{ number_format($product->cost_price_inc_vat ?? 0, 2) }}</td>
+                        <td class="border px-4 py-2 text-center">
+                            @if($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-10 w-10 object-cover rounded">
                             @else
-                                <div class="flex items-center justify-center w-full h-full text-gray-400 italic text-sm">
-                                    No Image
-                                </div>
+                                <span class="text-gray-400 text-sm">No Image</span>
                             @endif
-                        </div>
-
-                        <div class="mt-4 flex-grow">
-                            <h3 class="text-lg font-semibold text-gray-900 truncate" title="{{ $product->name }}">
-                                {{ $product->name }}
-                            </h3>
-                            <p class="text-sm text-gray-500 mt-1 truncate" title="{{ $product->category->name ?? 'Uncategorized' }}">
-                                {{ $product->category->name ?? 'Uncategorized' }}
-                            </p>
-                        </div>
-
-                        <div class="mt-3 flex items-center justify-between text-sm">
-                            <span class="text-green-700 font-semibold">${{ number_format($product->price, 2) }}</span>
-                            <span class="px-2 py-0.5 rounded-full text-xs font-medium
-                                {{ $product->status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                {{ $product->status ? 'Active' : 'Inactive' }}
-                            </span>
-                        </div>
-
-                        <div class="mt-4 flex justify-between text-xs text-gray-600 select-none">
-                            <a href="{{ route('products.show', $product) }}"
-                               class="hover:text-indigo-600 font-medium flex items-center gap-1" title="View Details">
-                                👁️ Show
-                            </a>
-
-                            <a href="{{ route('products.edit', $product) }}"
-                               class="hover:text-blue-600 font-medium flex items-center gap-1" title="Edit Product">
-                                ✏️ Edit
-                            </a>
-
-                            <button @click.prevent="confirmingProductId = {{ $product->id }}"
-                                    class="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 hover:text-red-800 transition"
-                                    title="Delete Product">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-6 0V5a2 2 0 012-2h2a2 2 0 012 2v2"/>
-                                </svg>
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="mt-8">
-                {{ $products->links() }}
-            </div>
-        @else
-            <p class="text-center text-gray-400 mt-20 italic">No products available.</p>
-        @endif
-
-        <!-- Confirmation Modal -->
-        <div x-show="confirmingProductId"
-             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-             x-cloak>
-            <div class="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2">Delete Confirmation</h2>
-                <p class="text-sm text-gray-600">Are you sure you want to delete this product? This action cannot be undone.</p>
-
-                <div class="mt-4 flex justify-end gap-3">
-                    <button @click="confirmingProductId = null"
-                            class="px-4 py-1 text-sm bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">
-                        Cancel
-                    </button>
-
-                    <form :action="`/products/${confirmingProductId}`" method="POST" class="inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                                class="px-4 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition">
-                            Confirm Delete
-                        </button>
-                    </form>
-                </div>
-            </div>
+                        </td>
+                        <td class="border px-4 py-2 text-center space-x-2 whitespace-nowrap">
+                            <a href="{{ route('products.show', $product->id) }}"
+                               class="text-green-600 hover:text-green-900 font-semibold text-sm">Show</a>
+                            <a href="{{ route('products.edit', $product->id) }}"
+                               class="text-indigo-600 hover:text-indigo-900 font-semibold text-sm">Edit</a>
+                            <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block"
+                                  onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900 font-semibold text-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="13" class="border px-4 py-6 text-center text-gray-500">No products found.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
+        <!-- Pagination -->
+        <div class="mt-4">
+            {{ $products->withQueryString()->links() }}
+        </div>
     </div>
+
+    <script>
+        function toggleAll(source) {
+            const checkboxes = document.querySelectorAll('input[name="selected_products[]"]');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+        }
+    </script>
 </x-layouts.sidebar>

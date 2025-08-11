@@ -72,25 +72,27 @@
                         @error('min_qty_alert') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Category (disabled initially) -->
-                    <div>
-                        <label for="category_id" class="block text-sm font-medium mb-1">Category <span class="text-red-600">*</span></label>
-                        <select name="category_id" id="category_id" required disabled
-                            class="w-full border rounded px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-400 focus:outline-none">
-                            <option value="">-- Select Category --</option>
-                        </select>
-                        @error('category_id') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
-                    </div>
+                  <!-- Category -->
+                <div>
+                  <label for="category_id" class="block text-sm font-medium mb-1">Category <span class="text-red-600">*</span></label>
+                  <select name="category_id" id="category_id" required
+                      class="w-full border rounded px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                      <option value="">-- Select Category --</option>
+                      <!-- Options will be dynamically populated -->
+                  </select>
+                  @error('category_id') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
+                </div>
 
-                    <!-- Sub Category (disabled initially) -->
-                    <div>
-                        <label for="sub_category_id" class="block text-sm font-medium mb-1">Sub Category</label>
-                        <select name="sub_category_id" id="sub_category_id" disabled
-                            class="w-full border rounded px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-400 focus:outline-none">
-                            <option value="">-- Select Sub Category --</option>
-                        </select>
-                        @error('sub_category_id') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
-                    </div>
+                <!-- Sub Category -->
+                <div>
+                  <label for="sub_category_id" class="block text-sm font-medium mb-1">Sub Category</label>
+                  <select name="sub_category_id" id="sub_category_id"
+                      class="w-full border rounded px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                      <option value="">-- Select Sub Category --</option>
+                      <!-- Options will be dynamically populated -->
+                  </select>
+                  @error('sub_category_id') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
+                </div>
 
                     <!-- Unit -->
                     <div>
@@ -143,8 +145,8 @@
                 </div>
             </section>
 
-            <!-- VAT & Pricing Section -->
-          <section class="space-y-4 bg-green-50 p-4 rounded-md border border-green-300">
+         <!-- VAT & Pricing Section -->
+<section class="space-y-4 bg-green-50 p-4 rounded-md border border-green-300">
   <h3 class="text-lg font-semibold border-b border-green-400 pb-1 mb-3 text-green-700">VAT & Pricing</h3>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -155,10 +157,10 @@
       <select id="vat_type" name="vat_type" required
           class="w-full border border-green-300 rounded px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-green-500 focus:outline-none">
           <option value="">-- Select VAT Type --</option>
-          <option value="vat">Individual VAT</option>
-          <option value="group">VAT Group</option>
+          <option value="vat" @selected(old('vat_type') == 'vat')>Individual VAT</option>
+          <option value="group" @selected(old('vat_type') == 'group')>VAT Group</option>
       </select>
-      <p id="vat_type_error" class="text-red-600 text-[10px] mt-1 hidden">Please select VAT Type.</p>
+      @error('vat_type') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
 
     <!-- VAT Dropdown -->
@@ -167,9 +169,9 @@
       <select id="vat_id" name="vat_id" required disabled
           class="w-full border border-green-300 rounded px-2 py-1 text-sm bg-gray-100 cursor-not-allowed focus:outline-none">
           <option value="">-- Select VAT --</option>
-          <!-- VAT options loaded dynamically -->
+          <!-- VAT options loaded dynamically by JS -->
       </select>
-      <p id="vat_id_error" class="text-red-600 text-[10px] mt-1 hidden">Please select VAT.</p>
+      @error('vat_id') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
 
     <!-- Cost Price Type -->
@@ -187,27 +189,34 @@
           <span class="ml-2">Exclusive VAT</span>
         </label>
       </div>
+      @error('cost_price_type') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
 
     {{-- Cost Price Inclusive --}}
     <div>
       <label for="cost_price_inclusive" class="block text-sm font-semibold mb-1 text-green-800">Cost Price (Incl. VAT)</label>
       <input type="number" step="0.01" min="0" id="cost_price_inclusive" name="cost_price_inclusive" required
+        value="{{ old('cost_price_inclusive') }}"
         class="w-full border border-green-300 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-green-500 focus:outline-none" />
+      @error('cost_price_inclusive') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
 
     {{-- Cost Price Exclusive --}}
     <div>
       <label for="cost_price_exclusive" class="block text-sm font-semibold mb-1 text-green-800">Cost Price (Excl. VAT)</label>
       <input type="number" step="0.01" min="0" id="cost_price_exclusive" name="cost_price_exclusive" required disabled
+        value="{{ old('cost_price_exclusive') }}"
         class="w-full border border-green-300 rounded px-2 py-1 text-sm bg-gray-100 cursor-not-allowed" />
+      @error('cost_price_exclusive') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
 
     {{-- Profit Margin --}}
     <div>
       <label for="profit_margin" class="block text-sm font-semibold mb-1 text-green-800">Profit Margin (%)</label>
       <input type="number" step="0.01" min="0" max="100" id="profit_margin" name="profit_margin" required
+        value="{{ old('profit_margin') }}"
         class="w-full border border-green-300 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-green-500 focus:outline-none" />
+      @error('profit_margin') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
 
     {{-- Discount Type --}}
@@ -215,24 +224,36 @@
       <label for="discount_type" class="block text-sm font-semibold mb-1 text-green-800">Discount Type</label>
       <select id="discount_type" name="discount_type"
         class="w-full border border-green-300 rounded px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-green-500 focus:outline-none">
-        <option value="percentage" selected>Percentage (%)</option>
-        <option value="amount">Fixed Amount</option>
+        <option value="percentage" @selected(old('discount_type') == 'percentage' || old('discount_type') === null)>Percentage (%)</option>
+        <option value="amount" @selected(old('discount_type') == 'amount')>Fixed Amount</option>
       </select>
+      @error('discount_type') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
 
     {{-- Discount Value --}}
     <div>
-      <label for="discount_value" id="discount_value_label" class="block text-sm font-semibold mb-1 text-green-800">Discount (%)</label>
+      <label for="discount_value" id="discount_value_label" class="block text-sm font-semibold mb-1 text-green-800">
+        Discount (%)</label>
       <input type="number" step="0.01" min="0" max="100" id="discount_value" name="discount_value" placeholder="Enter discount %"
+        value="{{ old('discount_value') }}"
         class="w-full border border-green-300 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-green-500 focus:outline-none" />
+      @error('discount_value') <p class="text-red-600 text-[10px] mt-1">{{ $message }}</p> @enderror
     </div>
+<div>
+  <label for="selling_price" class="block text-sm font-semibold mb-1 text-green-800">Selling Price</label>
+  <input 
+    type="number" 
+    step="0.01" 
+    min="0" 
+    id="selling_price" 
+    name="selling_price" 
+    readonly
+    value="{{ old('selling_price') }}"
+    aria-label="Selling Price"
+    class="w-full border border-green-300 rounded px-2 py-1 text-sm bg-gray-100" 
+  />
+</div>
 
-    {{-- Selling Price --}}
-    <div>
-      <label for="selling_price" class="block text-sm font-semibold mb-1 text-green-800">Selling Price</label>
-      <input type="number" step="0.01" min="0" id="selling_price" name="selling_price" readonly
-        class="w-full border border-green-300 rounded px-2 py-1 text-sm bg-gray-100" />
-    </div>
 
   </div>
 </section>
@@ -452,14 +473,22 @@
 
     <!-- Status -->
     <div>
-      <label for="status" class="block text-sm font-semibold mb-2 text-gray-800">Status <span class="text-red-600">*</span></label>
-      <select name="status" id="status" required
-              class="w-full border rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-        <option value="1" @selected(old('status', '1') == '1')>Active</option>
-        <option value="0" @selected(old('status') == '0')>Inactive</option>
-      </select>
-      @error('status') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
-    </div>
+  <label for="status" class="block text-sm font-semibold mb-2 text-gray-800">
+    Status <span class="text-red-600">*</span>
+  </label>
+  <select
+    name="status"
+    id="status"
+    required
+    class="w-full border rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+  >
+    <option value="1" @selected(old('status', '1') === '1')>Active</option>
+    <option value="0" @selected(old('status') === '0')>Inactive</option>
+  </select>
+  @error('status')
+    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+  @enderror
+</div>
 
     <!-- Tags -->
     <div class="md:col-span-3">
