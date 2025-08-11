@@ -1,15 +1,21 @@
 <x-layouts.sidebar>
     <x-slot name="header">
-        <h2 class="text-3xl font-extrabold text-gray-900 mb-6">➕ Create New Product Attribute</h2>
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">➕ Create New Attribute</h2>
+            <a href="{{ route('attributes.index') }}"
+               class="inline-block px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition">
+                ← Back to List
+            </a>
+        </div>
     </x-slot>
 
-    <div class="max-w-xl mx-auto bg-white rounded-lg shadow-lg p-8 border border-gray-200">
-        <form method="POST" action="{{ route('attributes.store') }}" novalidate>
+    <div class="max-w-xl mx-auto mt-6 bg-white border border-gray-200 rounded shadow-sm p-6">
+        <form method="POST" action="{{ route('attributes.store') }}" novalidate id="attributeForm" class="space-y-6">
             @csrf
 
             <!-- Attribute Name -->
-            <div class="mb-6">
-                <label for="name" class="block text-lg font-semibold text-gray-700 mb-2">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
                     Attribute Name
                 </label>
                 <input
@@ -17,31 +23,32 @@
                     name="name"
                     id="name"
                     value="{{ old('name') }}"
-                    class="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none
+                    class="w-full text-sm px-3 py-2 border rounded focus:ring-green-500 focus:border-green-500
                         @error('name') border-red-500 @else border-gray-300 @enderror"
-                    placeholder="e.g. Color"
+                    placeholder="Attribute Name"
                     required
-                    autofocus
                 >
                 @error('name')
-                    <p class="text-red-600 mt-2 text-sm">{{ $message }}</p>
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
             <!-- Attribute Values -->
-            <div class="mb-6">
-                <label class="block text-lg font-semibold text-gray-700 mb-3">Attribute Values</label>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Attribute Values
+                </label>
 
-                <div id="value-fields" class="space-y-3">
+                <div id="value-fields" class="space-y-2">
                     @if(old('values'))
                         @foreach(old('values') as $value)
                             <input
                                 type="text"
                                 name="values[]"
                                 value="{{ $value }}"
-                                class="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none
+                                class="w-full text-sm px-3 py-2 border rounded focus:ring-green-500 focus:border-green-500
                                     @error('values.*') border-red-500 @else border-gray-300 @enderror"
-                                placeholder="e.g. Red"
+                                placeholder="Value"
                                 required
                             >
                         @endforeach
@@ -49,8 +56,8 @@
                         <input
                             type="text"
                             name="values[]"
-                            class="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none border-gray-300"
-                            placeholder="e.g. Red"
+                            class="w-full text-sm px-3 py-2 border rounded focus:ring-green-500 focus:border-green-500 border-gray-300"
+                            placeholder="Value"
                             required
                         >
                     @endif
@@ -59,28 +66,39 @@
                 <button
                     type="button"
                     onclick="addValueField()"
-                    class="mt-4 inline-flex items-center space-x-2 text-blue-600 font-semibold hover:text-blue-800 focus:outline-none"
+                    class="mt-2 inline-flex items-center text-sm text-green-600 hover:text-green-800 font-semibold focus:outline-none"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Add More Values</span>
+                    Add More
                 </button>
 
                 @error('values')
-                    <p class="text-red-600 mt-2 text-sm">{{ $message }}</p>
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                 @enderror
                 @error('values.*')
-                    <p class="text-red-600 mt-2 text-sm">Each value must be valid and non-empty.</p>
+                    <p class="text-xs text-red-600 mt-1">Each value must be valid.</p>
                 @enderror
             </div>
 
-            <button
-                type="submit"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md transition-colors duration-300"
-            >
-                Save Attribute
-            </button>
+            <!-- Buttons -->
+            <div class="flex gap-3">
+                <button
+                    type="submit"
+                    class="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 rounded transition"
+                >
+                    💾 Save
+                </button>
+
+                <button
+                    type="button"
+                    onclick="document.getElementById('attributeForm').reset()"
+                    class="flex-1 border border-green-600 text-green-600 hover:bg-green-50 text-sm font-semibold py-2 rounded transition"
+                >
+                    ❌ Cancel
+                </button>
+            </div>
         </form>
     </div>
 
@@ -90,9 +108,9 @@
             const input = document.createElement('input');
             input.type = 'text';
             input.name = 'values[]';
-            input.placeholder = 'e.g. Blue';
+            input.placeholder = 'Value';
             input.required = true;
-            input.className = 'w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none border-gray-300 mt-3';
+            input.className = 'w-full text-sm px-3 py-2 border rounded focus:ring-green-500 focus:border-green-500 border-gray-300';
             container.appendChild(input);
         }
     </script>

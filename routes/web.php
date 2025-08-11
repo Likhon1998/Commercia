@@ -12,6 +12,10 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\ProductAttributeController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\VatController;
+use App\Http\Controllers\VatGroupController;
+
 
 Route::view('/', 'welcome');
 
@@ -56,6 +60,16 @@ Route::resource('people', PeopleController::class)->middleware(['auth']);
 
 Route::resource('outlets', OutletController::class)->middleware(['auth']);
 Route::resource('brands', BrandController::class)->middleware(['auth']);
+Route::resource('units', UnitController::class)->middleware(['auth']);
+Route::resource('vat', VatController::class)->middleware(['auth']);
+Route::resource('vat-group', VatGroupController::class)->middleware(['auth']);
+
+Route::resource('products', ProductController::class)->middleware(['auth']);
+;
+
+
+
+
 
 
 require __DIR__.'/auth.php';

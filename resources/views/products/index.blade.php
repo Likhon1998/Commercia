@@ -3,62 +3,66 @@
         <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold text-gray-800">🛍️ Products</h2>
             <a href="{{ route('products.create') }}"
-               class="inline-flex items-center bg-gray-600 text-white px-3 py-1.5 rounded hover:bg-gray-700 text-sm">
+               class="inline-flex items-center bg-indigo-600 text-white px-4 py-1.5 rounded hover:bg-indigo-700 text-sm transition">
                 + Add Product
             </a>
         </div>
     </x-slot>
 
-    <div class="py-6 max-w-6xl mx-auto" x-data="{ confirmingProductId: null }">
+    <div class="py-6 max-w-7xl mx-auto" x-data="{ confirmingProductId: null }">
         @if(session('success'))
-            <div class="mb-4 p-2 bg-green-100 text-green-800 rounded text-sm">
+            <div class="mb-4 p-3 bg-green-100 text-green-800 rounded text-sm shadow-sm">
                 {{ session('success') }}
             </div>
         @endif
 
         @if($products->count())
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @foreach($products as $product)
-                    <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition p-3">
-                        <div class="aspect-w-4 aspect-h-3 bg-gray-100 rounded overflow-hidden">
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition p-4 flex flex-col">
+                        <div class="aspect-w-4 aspect-h-3 rounded overflow-hidden bg-gray-100">
                             @if($product->primaryImage)
                                 <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}"
                                      alt="{{ $product->name }}"
                                      class="object-cover w-full h-full">
                             @else
-                                <div class="flex items-center justify-center w-full h-full text-gray-500 text-sm">
+                                <div class="flex items-center justify-center w-full h-full text-gray-400 italic text-sm">
                                     No Image
                                 </div>
                             @endif
                         </div>
 
-                        <div class="mt-3">
-                            <h3 class="text-base font-medium text-gray-800 truncate">{{ $product->name }}</h3>
-                            <p class="text-sm text-gray-500">{{ $product->category->name ?? 'Uncategorized' }}</p>
+                        <div class="mt-4 flex-grow">
+                            <h3 class="text-lg font-semibold text-gray-900 truncate" title="{{ $product->name }}">
+                                {{ $product->name }}
+                            </h3>
+                            <p class="text-sm text-gray-500 mt-1 truncate" title="{{ $product->category->name ?? 'Uncategorized' }}">
+                                {{ $product->category->name ?? 'Uncategorized' }}
+                            </p>
                         </div>
 
-                        <div class="mt-2 flex items-center justify-between text-sm">
+                        <div class="mt-3 flex items-center justify-between text-sm">
                             <span class="text-green-700 font-semibold">${{ number_format($product->price, 2) }}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium
                                 {{ $product->status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                 {{ $product->status ? 'Active' : 'Inactive' }}
                             </span>
                         </div>
 
-                        <div class="mt-3 flex justify-between text-xs text-gray-600">
-                            <a href="{{ route('products.edit', $product) }}"
-                               class="hover:text-blue-600 font-medium flex items-center gap-1">
-                                ✏️ Edit
-                            </a>
-
+                        <div class="mt-4 flex justify-between text-xs text-gray-600 select-none">
                             <a href="{{ route('products.show', $product) }}"
-                               class="hover:text-indigo-600 font-medium flex items-center gap-1">
+                               class="hover:text-indigo-600 font-medium flex items-center gap-1" title="View Details">
                                 👁️ Show
                             </a>
 
-                            <!-- Improved Delete Button -->
+                            <a href="{{ route('products.edit', $product) }}"
+                               class="hover:text-blue-600 font-medium flex items-center gap-1" title="Edit Product">
+                                ✏️ Edit
+                            </a>
+
                             <button @click.prevent="confirmingProductId = {{ $product->id }}"
-                                    class="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200 hover:text-red-800 transition">
+                                    class="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 hover:text-red-800 transition"
+                                    title="Delete Product">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                      viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -71,11 +75,11 @@
                 @endforeach
             </div>
 
-            <div class="mt-6">
+            <div class="mt-8">
                 {{ $products->links() }}
             </div>
         @else
-            <p class="text-center text-gray-400 mt-10">No products available.</p>
+            <p class="text-center text-gray-400 mt-20 italic">No products available.</p>
         @endif
 
         <!-- Confirmation Modal -->
@@ -86,22 +90,23 @@
                 <h2 class="text-lg font-semibold text-gray-800 mb-2">Delete Confirmation</h2>
                 <p class="text-sm text-gray-600">Are you sure you want to delete this product? This action cannot be undone.</p>
 
-                <div class="mt-4 flex justify-end gap-2">
+                <div class="mt-4 flex justify-end gap-3">
                     <button @click="confirmingProductId = null"
-                            class="px-3 py-1 text-sm bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                            class="px-4 py-1 text-sm bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">
                         Cancel
                     </button>
 
-                    <form :action="`/products/${confirmingProductId}`" method="POST">
+                    <form :action="`/products/${confirmingProductId}`" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
-                                class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
+                                class="px-4 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition">
                             Confirm Delete
                         </button>
                     </form>
                 </div>
             </div>
         </div>
+
     </div>
 </x-layouts.sidebar>

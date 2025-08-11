@@ -16,7 +16,8 @@ class BrandController extends Controller
 
     public function create()
     {
-        $categories = Category::where('status', 'active')->get();
+        $categories = Category::where('status', 'active')->whereNull('parent_id')
+                          ->get();
         return view('brands.create', compact('categories'));
     }
 
@@ -45,7 +46,8 @@ class BrandController extends Controller
 
     public function edit(Brand $brand)
     {
-        $categories = Category::where('status', 'active')->get();
+        $categories = Category::where('status', 'active')->whereNull('parent_id')
+                          ->get();
         return view('brands.edit', compact('brand', 'categories'));
     }
 
